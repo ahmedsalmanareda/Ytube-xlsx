@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أداة استخراج فيديوهات يوتيوب</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- زر تبديل الوضع الليلي -->
+  <button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <div class="container">
+    <h2><i class="fas fa-video"></i> أداة استخراج فيديوهات يوتيوب</h2>
+
+    <div class="input-group">
+      <input type="text" id="videoURL" placeholder="https://youtube.com/watch?v=... أو رابط قائمة تشغيل">
+      <button class="btn btn-primary" onclick="addVideo()">
+        <i class="fas fa-plus"></i> إضافة
+      </button>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="downloadExcel()">
+        <i class="fas fa-file-excel"></i> استخراج Excel
+      </button>
+      <button class="btn btn-danger" onclick="clearAll()">
+        <i class="fas fa-trash"></i> مسح الكل
+      </button>
+    </div>
+
+    <div id="counter">عدد الفيديوهات: 0</div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>جاري تحميل البيانات...</p>
+    </div>
+
+    <div class="table-responsive">
+      <table id="resultTable">
+        <thead>
+        <tr>
+            <th>Video ID</th>
+            <th>اسم الفيديو</th>
+            <th>إجراءات</th>
+        </tr>              
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
