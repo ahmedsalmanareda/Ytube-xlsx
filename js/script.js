@@ -83,6 +83,8 @@ async function fetchVideoTitle(videoId) {
   }
 }
 
+
+
 // جلب فيديوهات قائمة التشغيل
 async function fetchPlaylistVideos(playlistUrl) {
   const playlistId = new URL(playlistUrl).searchParams.get("list");
@@ -239,11 +241,58 @@ function updateTable() {
   setupLazyLoading();
 }
 
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('deleteModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// إغلاق النافذة عند الضغط على Esc
+document.addEventListener('keydown', function(event) {
+  const modal = document.getElementById('deleteModal');
+  if (event.key === 'Escape' && modal.style.display === 'flex') {
+    modal.style.display = 'none';
+  }
+});
+
+function deleteVideo(index) {
+  if (index >= 0 && index < videos.length) {
+    const deletedVideo = videos.splice(index, 1)[0];
+    updateTable();
+    saveToLocalStorage();
+    showToast(`تم حذف "${deletedVideo.title}"`, false);
+  }
+}
+
 // تأكيد الحذف مع عرض الصورة المصغرة
 function confirmDelete(index, videoId) {
-  deleteQueue = { index, videoId };
-  document.getElementById('deleteThumbnail').src = getThumbnailUrl(videoId);
-  document.getElementById('deleteModal').style.display = 'block';
+  if (videos.length === 0) {
+    showToast("لا يوجد فيديوهات للحذف", true);
+    return;
+  }
+
+  const modal = document.getElementById('deleteModal');
+  const thumbnail = document.getElementById('deleteThumbnail');
+  
+  // تعيين صورة مصغرة افتراضية إذا لم يتم تحميلها
+  thumbnail.src = getThumbnailUrl(videoId);
+  thumbnail.onerror = function() {
+    this.src = 'assets/no-thumbnail.png';
+  };
+
+  // عرض النافذة في وسط الشاشة
+  modal.style.display = 'flex';
+  
+  // إعداد أحداث الأزرار
+  document.getElementById('confirmDelete').onclick = function() {
+    deleteVideo(index);
+    modal.style.display = 'none';
+  };
+  
+  document.getElementById('cancelDelete').onclick = function() {
+    modal.style.display = 'none';
+  };
 }
 
 // إعداد Lazy Loading للصور

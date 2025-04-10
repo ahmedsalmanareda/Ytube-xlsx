@@ -75,10 +75,14 @@
     <div class="modal-content">
       <span class="close">&times;</span>
       <h3>تأكيد الحذف</h3>
-      <img id="deleteThumbnail" src="" alt="Video Thumbnail" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
+      <div class="thumbnail-container">
+        <img id="deleteThumbnail" src="" alt="صورة الفيديو">
+      </div>
       <p>هل أنت متأكد من حذف هذا الفيديو؟</p>
-      <button id="confirmDelete" class="btn btn-danger">حذف</button>
-      <button id="cancelDelete" class="btn btn-primary">إلغاء</button>
+      <div class="modal-actions">
+        <button id="confirmDelete" class="btn btn-danger">حذف</button>
+        <button id="cancelDelete" class="btn btn-primary">إلغاء</button>
+      </div>
     </div>
   </div>
 
