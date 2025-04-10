@@ -1,10 +1,13 @@
 // المتغيرات العامة
-const videos = [];
+
 const apiKey = "AIzaSyDd031joZZBk0ykKd5f_F0hypH-3NCYVYo"; // استبدل بمفتاحك الخاص
 const videoCache = {};
+const MAX_HISTORY = 30;
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 ساعة
 let deleteQueue = null;
 let debounceTimer;
+let history = [];
+let videos = [];
 
 // عرض التنبيهات
 function showToast(message, isError = true) {
@@ -42,6 +45,41 @@ function getThumbnailUrl(videoId, quality = 'medium') {
   return `https://img.youtube.com/vi/${videoId}/${qualities[quality]}`;
 }
 
+function saveState() {
+  history.push(JSON.parse(JSON.stringify(videos)));
+  if (history.length > MAX_HISTORY) history.shift();
+  updateUndoButton();
+}
+
+// دالة التراجع
+function undoAction() {
+  if (history.length > 0) {
+    videos = history.pop();
+    updateTable();
+    saveToLocalStorage();
+    updateUndoButton();
+    showToast("تم التراجع عن الإجراء الأخير", false);
+  }
+}
+
+// تحديث حالة زر التراجع
+function updateUndoButton() {
+  const undoBtn = document.getElementById('undoBtn');
+  undoBtn.disabled = history.length === 0;
+}
+
+// دالة اللصق من الحافظة
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('videoURL').value = text;
+    showToast("تم لصق الرابط من الحافظة", false);
+  } catch (err) {
+    showToast("تعذر الوصول إلى الحافظة. يرجى استخدام Ctrl+V", true);
+    console.error("Failed to read clipboard:", err);
+  }
+}
+
 // دالة مساعدة لتنظيف العنوان
 function cleanTitle(title) {
   if (!title) return "غير معروف";
@@ -57,27 +95,27 @@ function cleanTitle(title) {
 
 // جلب عنوان الفيديو مع التخزين المؤقت
 async function fetchVideoTitle(videoId) {
-  if (videoCache[videoId] && Date.now() - videoCache[videoId].timestamp < CACHE_EXPIRY) {
-    return videoCache[videoId].title;
-  }
+  if (videoCache[videoId]) return videoCache[videoId].title;
 
   try {
     toggleLoading(true);
     const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
     const data = await response.json();
-    const title = cleanTitle(data.items[0]?.snippet?.title);
+    let title = cleanTitle(data.items[0]?.snippet?.title);
     
-    videoCache[videoId] = {
-      title,
-      timestamp: Date.now()
-    };
+    // تجاهل الفيديوهات الخاصة
+    if (title.toLowerCase().includes('private video') || 
+        title.toLowerCase().includes('video unavailable')) {
+      return null;
+    }
     
+    videoCache[videoId] = { title, timestamp: Date.now() };
     return title;
   } catch (e) {
     console.error("فشل جلب البيانات:", e);
-    showToast(`خطأ: ${e.message}`, true);
-    return "غير معروف";
+    return null;
   } finally {
     toggleLoading(false);
   }
@@ -96,6 +134,8 @@ async function fetchPlaylistVideos(playlistUrl) {
   try {
     toggleLoading(true);
     let nextPageToken = "";
+    let addedVideos = 0;
+    
     do {
       const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}&pageToken=${nextPageToken}`);
       const data = await response.json();
@@ -108,21 +148,29 @@ async function fetchPlaylistVideos(playlistUrl) {
       for (const item of data.items) {
         const videoId = item.snippet.resourceId.videoId;
         const title = cleanTitle(item.snippet.title);
-        if (videoId && title) {
+        
+        // تجاهل الفيديوهات الخاصة
+        if (videoId && title && !title.toLowerCase().includes('private video')) {
           videos.unshift({ id: videoId, title });
           videoCache[videoId] = { title, timestamp: Date.now() };
+          addedVideos++;
         }
       }
 
       nextPageToken = data.nextPageToken || "";
     } while (nextPageToken);
 
-    updateTable();
-    saveToLocalStorage();
-    showToast(`تم إضافة ${videos.length} فيديو من قائمة التشغيل`, false);
+    if (addedVideos > 0) {
+      saveState(); // حفظ الحالة قبل التعديل
+      updateTable();
+      saveToLocalStorage();
+      showToast(`تم إضافة ${addedVideos} فيديو من قائمة التشغيل`, false);
+    } else {
+      showToast("لم يتم إضافة أي فيديو (قد تكون جميعها خاصة)", true);
+    }
   } catch (error) {
     console.error(error);
-    showToast("حدث خطأ أثناء جلب بيانات قائمة التشغيل");
+    showToast("حدث خطأ أثناء جلب بيانات قائمة التشغيل", true);
   } finally {
     toggleLoading(false);
   }
@@ -130,33 +178,36 @@ async function fetchPlaylistVideos(playlistUrl) {
 
 // إضافة فيديو مع Debounce
 async function addVideo() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(async () => {
-    const url = document.getElementById('videoURL').value.trim();
-    document.getElementById('videoURL').value = '';
+  const url = document.getElementById('videoURL').value.trim();
+  document.getElementById('videoURL').value = '';
 
-    if (!url) {
-      showToast("من فضلك أدخل رابط الفيديو أو قائمة التشغيل.");
-      return;
-    }
+  if (!url) {
+    showToast("من فضلك أدخل رابط الفيديو أو قائمة التشغيل.");
+    return;
+  }
 
-    if (url.includes("list=")) {
-      await fetchPlaylistVideos(url);
-      return;
-    }
+  if (url.includes("list=")) {
+    await fetchPlaylistVideos(url);
+    return;
+  }
 
-    const id = extractYouTubeID(url);
-    if (!id) {
-      showToast("الرابط غير صحيح أو لا يمكن استخراج ID منه.");
-      return;
-    }
+  const id = extractYouTubeID(url);
+  if (!id) {
+    showToast("الرابط غير صحيح أو لا يمكن استخراج ID منه.");
+    return;
+  }
 
-    const title = await fetchVideoTitle(id);
-    videos.unshift({ id, title });
-    updateTable();
-    saveToLocalStorage();
-    showToast("تم إضافة الفيديو بنجاح", false);
-  }, 500);
+  const title = await fetchVideoTitle(id);
+  if (!title) {
+    showToast("تم تجاهل فيديو خاص أو غير متاح", true);
+    return;
+  }
+
+  saveState(); // حفظ الحالة قبل التعديل
+  videos.unshift({ id, title });
+  updateTable();
+  saveToLocalStorage();
+  showToast("تم إضافة الفيديو بنجاح", false);
 }
 
 // تحديث الجدول مع كل الميزات الجديدة
@@ -258,10 +309,12 @@ document.addEventListener('keydown', function(event) {
 
 function deleteVideo(index) {
   if (index >= 0 && index < videos.length) {
+    saveState(); // حفظ الحالة قبل الحذف
     const deletedVideo = videos.splice(index, 1)[0];
     updateTable();
     saveToLocalStorage();
     showToast(`تم حذف "${deletedVideo.title}"`, false);
+    updateUndoButton();
   }
 }
 
@@ -430,10 +483,12 @@ function clearAll() {
   if (videos.length === 0) return;
   
   if (confirm("هل أنت متأكد من مسح جميع الفيديوهات؟")) {
+    saveState(); // حفظ الحالة قبل المسح
     videos.length = 0;
     updateTable();
     localStorage.removeItem('youtubeExtractorData');
     showToast("تم مسح جميع الفيديوهات", false);
+    updateUndoButton();
   }
 }
 

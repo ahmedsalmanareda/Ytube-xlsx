@@ -23,6 +23,9 @@
 
     <div class="input-group">
       <input type="text" id="videoURL" placeholder="https://youtube.com/watch?v=... أو رابط قائمة تشغيل">
+      <button class="btn btn-secondary" onclick="pasteFromClipboard()" title="لصق الرابط">
+        <i class="fas fa-paste"></i>
+      </button>
       <button class="btn btn-primary" onclick="addVideo()">
         <i class="fas fa-plus"></i> إضافة
       </button>
@@ -43,6 +46,9 @@
       </button>
       <button class="btn btn-danger" onclick="clearAll()">
         <i class="fas fa-trash"></i> مسح الكل
+      </button>
+      <button class="btn btn-warning" onclick="undoAction()" id="undoBtn" disabled>
+        <i class="fas fa-undo"></i> تراجع
       </button>
     </div>
 

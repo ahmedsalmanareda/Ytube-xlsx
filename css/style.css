@@ -494,3 +494,32 @@ table img:hover {
     height: 150px;
   }
 }
+
+/* زر اللصق */
+.btn-secondary {
+  background-color: var(--light-text);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+/* تحسينات التنسيق */
+#undoBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.input-group button {
+  padding: 12px 15px;
+}
