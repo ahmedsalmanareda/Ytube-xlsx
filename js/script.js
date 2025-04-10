@@ -69,6 +69,7 @@ function updateUndoButton() {
 }
 
 // دالة اللصق من الحافظة
+// دالة اللصق من الحافظة
 async function pasteFromClipboard() {
   try {
     const text = await navigator.clipboard.readText();
@@ -77,6 +78,10 @@ async function pasteFromClipboard() {
   } catch (err) {
     showToast("تعذر الوصول إلى الحافظة. يرجى استخدام Ctrl+V", true);
     console.error("Failed to read clipboard:", err);
+    
+    // حل بديل للمتصفحات التي لا تدعم Clipboard API
+    document.getElementById('videoURL').focus();
+    document.execCommand('paste');
   }
 }
 
