@@ -556,36 +556,6 @@ function setupDragAndDrop() {
     });
   });
 }
-  
-  tbody.addEventListener('dragend', (e) => {
-    if (e.target.tagName === 'TR') {
-      e.target.classList.remove('dragging');
-      
-      // تحديث مصفوفة videos بناءً على الترتيب الجديد
-      const newVideos = [];
-      const rows = tbody.querySelectorAll('tr');
-      rows.forEach(row => {
-        const index = parseInt(row.dataset.index);
-        newVideos.push(videos[index]);
-      });
-      
-      saveState();
-      videos = newVideos;
-      saveToLocalStorage();
-    }
-  });
-  
-  // جعل جميع الصفوف قابلة للسحب
-  tbody.querySelectorAll('tr').forEach(row => {
-    row.draggable = true;
-    row.addEventListener('dragstart', (e) => {
-      e.target.style.opacity = '0.5';
-    });
-    row.addEventListener('dragend', (e) => {
-      e.target.style.opacity = '1';
-    });
-  });
-}
 
 
 // مسح جميع الفيديوهات
