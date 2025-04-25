@@ -464,13 +464,20 @@ function copyToClipboard() {
     return;
   }
 
+  // الحصول على ترتيب الصفوف الحالي من DOM
+  const rows = document.querySelectorAll('#resultTable tbody tr');
+  const currentOrder = Array.from(rows).map(row => {
+    const index = parseInt(row.dataset.index);
+    return videos[index];
+  });
+
   // إنشاء محتوى نصي منسق للنسخ
-  const textToCopy = videos.map(v => 
+  const textToCopy = currentOrder.map(v => 
     copyOrder === 'titleFirst' 
       ? `${v.title.replace(/\n/g, ' ')}\t${v.id}`
       : `${v.id}\t${v.title.replace(/\n/g, ' ')}`
   ).join('\n');
-  
+
   navigator.clipboard.writeText(textToCopy)
     .then(() => showToast("تم نسخ القائمة إلى الحافظة (جاهز للصق في Excel)", false))
     .catch(err => {
@@ -498,7 +505,7 @@ function setupDragAndDrop() {
   tbody.addEventListener('dragstart', (e) => {
     if (e.target.tagName === 'TR') {
       e.target.classList.add('dragging');
-      e.dataTransfer.setData('text/plain', e.target.rowIndex - 1);
+      e.dataTransfer.setData('text/plain', e.target.dataset.index);
       e.dataTransfer.effectAllowed = 'move';
     }
   });
@@ -519,6 +526,36 @@ function setupDragAndDrop() {
       }
     }
   });
+  
+  tbody.addEventListener('dragend', (e) => {
+    if (e.target.tagName === 'TR') {
+      e.target.classList.remove('dragging');
+      
+      // تحديث مصفوفة videos بناءً على الترتيب الجديد
+      const newVideos = [];
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const index = parseInt(row.dataset.index);
+        newVideos.push(videos[index]);
+      });
+      
+      saveState();
+      videos = newVideos;
+      saveToLocalStorage();
+    }
+  });
+  
+  // جعل جميع الصفوف قابلة للسحب
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.draggable = true;
+    row.addEventListener('dragstart', (e) => {
+      e.target.style.opacity = '0.5';
+    });
+    row.addEventListener('dragend', (e) => {
+      e.target.style.opacity = '1';
+    });
+  });
+}
   
   tbody.addEventListener('dragend', (e) => {
     if (e.target.tagName === 'TR') {
