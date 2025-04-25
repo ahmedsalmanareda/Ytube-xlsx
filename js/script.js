@@ -8,10 +8,7 @@ let deleteQueue = null;
 let debounceTimer;
 let history = [];
 let videos = [];
-<<<<<<< HEAD
 let copyOrder = 'titleFirst'; // أو 'idFirst'
-=======
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
 
 // عرض التنبيهات
 function showToast(message, isError = true) {
@@ -227,11 +224,8 @@ function updateTable() {
   videos.forEach((video, index) => {
     const tr = document.createElement('tr');
     tr.className = 'new-row';
-<<<<<<< HEAD
     tr.dataset.index = index;
     tr.draggable = true;
-=======
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
 
     // الصورة المصغرة مع Lazy Loading
     const tdThumbnail = document.createElement('td');
@@ -304,10 +298,7 @@ function updateTable() {
 
   document.getElementById('counter').textContent = `عدد الفيديوهات: ${videos.length}`;
   setupLazyLoading();
-<<<<<<< HEAD
   setupDragAndDrop();
-=======
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
 }
 
 window.addEventListener('click', function(event) {
@@ -473,7 +464,6 @@ function copyToClipboard() {
     return;
   }
 
-<<<<<<< HEAD
   // إنشاء محتوى نصي منسق للنسخ
   const textToCopy = videos.map(v => 
     copyOrder === 'titleFirst' 
@@ -481,23 +471,10 @@ function copyToClipboard() {
       : `${v.id}\t${v.title.replace(/\n/g, ' ')}`
   ).join('\n');
   
-=======
-  // إنشاء محتوى نصي منسق للنسخ (بتباعد Tab بين العمودين)
-  const textToCopy = videos.map(v => 
-    `${v.id}\t${v.title.replace(/\n/g, ' ')}` // \t لفصل الأعمدة
-  ).join('\n'); // \n لفصل الصفوف
-  
-  // نسخ النص مع تنسيق التباعد
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
   navigator.clipboard.writeText(textToCopy)
     .then(() => showToast("تم نسخ القائمة إلى الحافظة (جاهز للصق في Excel)", false))
     .catch(err => {
       console.error('Failed to copy:', err);
-<<<<<<< HEAD
-=======
-      showToast("فشل النسخ إلى الحافظة", true);
-      
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
       // حل بديل للمتصفحات القديمة
       const textarea = document.createElement('textarea');
       textarea.value = textToCopy;
@@ -509,7 +486,6 @@ function copyToClipboard() {
     });
 }
 
-<<<<<<< HEAD
 function toggleCopyOrder() {
   copyOrder = copyOrder === 'titleFirst' ? 'idFirst' : 'titleFirst';
   showToast(`تم تغيير ترتيب النسخ إلى: ${copyOrder === 'titleFirst' ? 'العنوان أولاً' : 'ID أولاً'}`, false);
@@ -575,8 +551,6 @@ function setupDragAndDrop() {
 }
 
 
-=======
->>>>>>> f7632f604777de7f2df355ad6c7f0bcc643d0a87
 // مسح جميع الفيديوهات
 function clearAll() {
   if (videos.length === 0) return;
