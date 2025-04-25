@@ -4,8 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>أداة استخراج فيديوهات يوتيوب</title>
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -19,6 +23,9 @@
 
     <div class="input-group">
       <input type="text" id="videoURL" placeholder="https://youtube.com/watch?v=... أو رابط قائمة تشغيل">
+      <button class="btn btn-secondary" onclick="pasteFromClipboard()" title="لصق الرابط">
+        <i class="fas fa-paste"></i>
+      </button>
       <button class="btn btn-primary" onclick="addVideo()">
         <i class="fas fa-plus"></i> إضافة
       </button>
@@ -26,10 +33,25 @@
 
     <div class="btn-group">
       <button class="btn btn-primary" onclick="downloadExcel()">
-        <i class="fas fa-file-excel"></i> استخراج Excel
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-primary" onclick="downloadCSV()">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+      <button class="btn btn-primary" onclick="downloadJSON()">
+        <i class="fas fa-file-code"></i> JSON
+      </button>
+      <button class="btn btn-info" onclick="toggleCopyOrder()" title="تبديل ترتيب النسخ">
+        <i class="fas fa-exchange-alt"></i>
+      </button>
+      <button class="btn btn-primary" onclick="copyToClipboard()">
+        <i class="fas fa-copy"></i> نسخ القائمة
       </button>
       <button class="btn btn-danger" onclick="clearAll()">
         <i class="fas fa-trash"></i> مسح الكل
+      </button>
+      <button class="btn btn-warning" onclick="undoAction()" id="undoBtn" disabled>
+        <i class="fas fa-undo"></i> تراجع
       </button>
     </div>
 
@@ -43,11 +65,12 @@
     <div class="table-responsive">
       <table id="resultTable">
         <thead>
-        <tr>
+          <tr>
+            <th>الصورة</th>
             <th>Video ID</th>
             <th>اسم الفيديو</th>
             <th>إجراءات</th>
-        </tr>              
+          </tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -55,6 +78,22 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <!-- نافذة تأكيد الحذف -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>تأكيد الحذف</h3>
+      <div class="thumbnail-container">
+        <img id="deleteThumbnail" src="" alt="صورة الفيديو">
+      </div>
+      <p>هل أنت متأكد من حذف هذا الفيديو؟</p>
+      <div class="modal-actions">
+        <button id="confirmDelete" class="btn btn-danger">حذف</button>
+        <button id="cancelDelete" class="btn btn-primary">إلغاء</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/script.js"></script>
 </body>
