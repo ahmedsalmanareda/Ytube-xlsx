@@ -157,7 +157,7 @@ async function fetchPlaylistVideos(playlistUrl) {
         
         // تجاهل الفيديوهات الخاصة
         if (videoId && title && !title.toLowerCase().includes('private video')) {
-          videos.unshift({ id: videoId, title });
+          videos.push({ id: videoId, title });
           videoCache[videoId] = { title, timestamp: Date.now() };
           addedVideos++;
         }
@@ -210,7 +210,7 @@ async function addVideo() {
   }
 
   saveState(); // حفظ الحالة قبل التعديل
-  videos.unshift({ id, title });
+  videos.push({ id, title });
   updateTable();
   saveToLocalStorage();
   showToast("تم إضافة الفيديو بنجاح", false);
